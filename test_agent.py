@@ -1,5 +1,5 @@
 import asyncio
-from agent.crop_agent import crop_agent
+from potpie.backend.crop_agent import crop_agent
 
 async def main():
     result = await crop_agent.run(
