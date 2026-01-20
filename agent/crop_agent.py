@@ -19,6 +19,7 @@ async def generate_advisory(data):
     result = await crop_agent.run(
         f"Crop: {data.crop}, Location: {data.location}, Soil: {data.soil_type}, Goal: {data.goal}"
     )
+
     return CropAdvisory(
         crop_stage=result.output_text,
         irrigation=[],
