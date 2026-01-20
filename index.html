@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🌱 Smart Crop Advisory AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --secondary: #66bb6a;
+      --accent: #ffb300;
+      --bg: #f1f8e9;
+      --card: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 14px 36px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 30px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .loading {
+      text-align: center;
+      margin-top: 20px;
+      display: none;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .result {
+      margin-top: 30px;
+      padding: 25px;
+      background: #f9fff6;
+      border-radius: 12px;
+      border-left: 6px solid var(--accent);
+      display: none;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    .section h3 {
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+
+    /* ✅ THIS IS THE UL PART YOU ASKED FOR */
+    ul {
+      padding-left: 22px;
+      margin: 6px 0;
+    }
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🌱 Smart Crop Advisory AI</h1>
+    <p class="subtitle">AI-powered, location-aware crop guidance</p>
+
+    <div class="form-grid">
+      <div>
+        <label>Crop</label>
+        <select id="crop">
+          <option value="rice">Rice</option>
+          <option value="wheat">Wheat</option>
+          <option value="maize">Maize</option>
+          <option value="cotton">Cotton</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Location</label>
+        <input id="location" placeholder="e.g. Tamil Nadu" />
+      </div>
+
+      <div>
+        <label>Soil Type</label>
+        <select id="soil">
+          <option value="clayey">Clayey</option>
+          <option value="loamy">Loamy</option>
+          <option value="sandy">Sandy</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Goal</label>
+        <select id="goal">
+          <option value="high yield">High Yield</option>
+          <option value="low cost">Low Cost</option>
+          <option value="organic">Organic Farming</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <button onclick="getAdvice()">Get AI Advisory</button>
+    </div>
+
+    <div class="loading" id="loading">⏳ Generating advisory…</div>
+
+    <div class="result" id="result">
+      <div class="section">
+        <h3>🌾 Crop Stage</h3>
+        <p id="crop_stage"></p>
+      </div>
+
+      <div class="section">
+        <h3>💧 Irrigation</h3>
+        <ul id="irrigation"></ul>
+      </div>
+
+      <div class="section">
+        <h3>🌱 Fertilizer</h3>
+        <ul id="fertilizer"></ul>
+      </div>
+
+      <div class="section">
+        <h3>🐛 Pest & Disease Risk</h3>
+        <ul id="risk"></ul>
+      </div>
+
+      <div class="section">
+        <h3>📈 Yield Tips</h3>
+        <ul id="tips"></ul>
+      </div>
+    </div>
+
+    <footer>
+      FastAPI · Ollama · Qwen · Deployed on Vercel
+    </footer>
+  </div>
+
+<script>
+async function getAdvice() {
+  const loading = document.getElementById("loading");
+  const result = document.getElementById("result");
+
+  loading.style.display = "block";
+  result.style.display = "none";
+
+  const payload = {
+    crop: document.getElementById("crop").value,
+    location: document.getElementById("location").value || "Tamil Nadu",
+    soil_type: document.getElementById("soil").value,
+    goal: document.getElementById("goal").value
+  };
+
+  try {
+    const API_URL = "https://YOUR-BACKEND-URL/api/advisory";
+
+    const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    renderParsedAdvice(data.crop_stage);
+    result.style.display = "block";
+  } catch (e) {
+    alert("Backend not reachable");
+  } finally {
+    loading.style.display = "none";
+  }
+}
+
+/* ---------- PARSING LOGIC ---------- */
+
+function renderParsedAdvice(text) {
+  document.getElementById("crop_stage").innerText = text.split("\n")[0];
+
+  setList("irrigation", extractBullets(text, "irrig"));
+  setList("fertilizer", extractBullets(text, "fertil"));
+  setList("risk", extractBullets(text, "pest"));
+  setList("tips", extractBullets(text, "yield"));
+}
+
+function extractBullets(text, keyword) {
+  return text
+    .split("\n")
+    .filter(l => l.trim().startsWith("-") && l.toLowerCase().includes(keyword))
+    .map(l => l.replace(/[-*]/g, "").trim());
+}
+
+function setList(id, items) {
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+
+  if (!items || items.length === 0) {
+    el.innerHTML = "<li>Refer detailed advisory above</li>";
+    return;
+  }
+
+  items.forEach(i => {
+    const li = document.createElement("li");
+    li.innerText = i;
+    el.appendChild(li);
+  });
+}
+</script>
+</body>
+</html>
